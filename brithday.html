@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Mom OS</title>
+
+<style>
+body{
+margin:0;
+color:white;
+font-family:"Microsoft YaHei";
+overflow:hidden;
+text-align:center;
+animation:bgMove 15s infinite alternate;
+}
+
+@keyframes bgMove{
+0%{background:linear-gradient(to right,#000000,#1a1a2e);}
+50%{background:linear-gradient(to right,#16213e,#0f3460);}
+100%{background:linear-gradient(to right,#1a1a2e,#000000);}
+}
+
+#intro{
+position:absolute;
+width:100%;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+flex-direction:column;
+background:black;
+z-index:5;
+}
+
+button{
+padding:10px 20px;
+font-size:16px;
+border:none;
+border-radius:20px;
+cursor:pointer;
+margin:10px;
+background:white;
+color:black;
+}
+
+#main{
+display:none;
+position:relative;
+z-index:2;
+}
+
+#message{
+width:70%;
+margin:auto;
+margin-top:20px;
+min-height:100px;
+font-size:22px;
+white-space:pre-line;
+}
+
+#randomWish{
+font-size:22px;
+margin-top:20px;
+min-height:40px;
+opacity:0;
+transition:opacity 0.5s;
+}
+
+#carousel{
+position:relative;
+width:300px;
+height:300px;
+margin:40px auto;
+transform-style:preserve-3d;
+transition: transform 0.1s linear;
+}
+
+#carousel img{
+position:absolute;
+width:280px;
+height:280px;
+left:10px;
+top:10px;
+border-radius:20px;
+object-fit:cover;
+}
+
+
+.star{
+position:absolute;
+width:2px;
+height:2px;
+background:white;
+animation:twinkle 2s infinite alternate;
+}
+
+@keyframes twinkle{
+from{opacity:0.3;}
+to{opacity:1;}
+}
+
+.heart{
+position:absolute;
+color:#ff4e8a;
+font-size:20px;
+animation:fall 5s linear infinite;
+}
+
+@keyframes fall{
+0%{transform:translateY(-50px);}
+100%{transform:translateY(800px);}
+}
+
+canvas{
+position:absolute;
+top:0;
+left:0;
+z-index:0;
+pointer-events:none;
+}
+</style>
+</head>
+
+<body>
+
+<div id="intro">
+<h1>Mom OS 启动中...</h1>
+<input type="password" id="password" placeholder="输入解锁密码">
+<button onclick="unlock()">解锁</button>
+</div>
+
+<div id="main">
+<h1>妈妈， 生日快乐！</h1>
+
+<div id="message"></div>
+
+<div id="carousel">
+<img src="photo1.jpg" style="transform:rotateY(0deg) translateZ(400px);">
+<img src="photo2.jpg" style="transform:rotateY(120deg) translateZ(400px);">
+<img src="photo3.jpg" style="transform:rotateY(240deg) translateZ(400px);">
+</div>
+
+<button onclick="showRandomWish()">点我一下</button>
+<div id="randomWish"></div>
+
+<button onclick="toggleMusic()">播放/暂停音乐</button>
+
+<audio id="music" loop>
+<source src="birthday.mp3" type="audio/mpeg">
+</audio>
+
+</div>
+
+<canvas id="fireworks"></canvas>
+
+<script>
+
+/* 解锁 */
+function unlock(){
+var pass=document.getElementById("password").value;
+if(pass==="mom"){
+document.getElementById("intro").style.display="none";
+document.getElementById("main").style.display="block";
+startAll();
+}else{
+alert("密码错误");
+}
+}
+
+/* 启动 */
+function startAll(){
+typeWriter();
+createStars();
+setInterval(createHeart,300);
+startFireworks();
+}
+
+/* =========================
+   🎆 全局烟花系统（稳定版）
+========================= */
+
+var canvas = document.getElementById("fireworks");
+var ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+var particles = [];
+
+window.addEventListener("resize", function(){
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+});
+
+function explode(x,y, power=50){
+
+for(var i=0;i<power;i++){
+var angle = Math.random()*2*Math.PI;
+var speed = Math.random()*5+2;
+
+particles.push({
+x:x,
+y:y,
+dx:Math.cos(angle)*speed,
+dy:Math.sin(angle)*speed,
+life:80
+});
+}
+}
+
+canvas.addEventListener("click", function(e){
+explode(e.clientX, e.clientY, 60);
+});
+
+function animateFireworks(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+
+particles.forEach((p,i)=>{
+p.x+=p.dx;
+p.y+=p.dy;
+p.life--;
+
+ctx.fillStyle="hsl("+Math.random()*360+",100%,60%)";
+ctx.fillRect(p.x,p.y,3,3);
+
+if(p.life<=0){
+particles.splice(i,1);
+}
+});
+
+requestAnimationFrame(animateFireworks);
+}
+
+animateFireworks();
+
+/* 打字开场 */
+var text="系统检测完成。\n\
+检测到：本系统最重要的人。\n\
+今天属于你。";
+var i=0;
+function typeWriter(){
+if(i<text.length){
+document.getElementById("message").innerHTML+=text.charAt(i);
+i++;
+setTimeout(typeWriter,60);
+}
+}
+
+/* 随机祝福语 */
+var wishes=[
+"🎉 生日快乐！",
+"今日状态：稳定运行。",
+"祝每天都有好心情！",
+"今天不吹牛了，吹个蜡烛",
+"百毒不侵、刀枪不入、逍遥快乐！",
+"恭喜你又绕着太阳转了一圈",
+"百事可乐",
+"万事芬达",
+"天天哇哈哈",
+"寿考维祺，以介景福",
+"如月之恒，如日之升",
+"愿君千万岁，无岁不逢春",
+"如松柏之茂，无不尔或承",
+];
+
+function showRandomWish(){
+var random=wishes[Math.floor(Math.random()*wishes.length)];
+var box=document.getElementById("randomWish");
+box.style.opacity=0;
+setTimeout(function(){
+box.innerHTML=random;
+box.style.opacity=1;
+},200);
+}
+
+/* 音乐控制 */
+function toggleMusic(){
+var m=document.getElementById("music");
+if(m.paused){ m.play(); }
+else{ m.pause(); }
+}
+
+/* 星空 */
+function createStars(){
+for(var i=0;i<100;i++){
+var star=document.createElement("div");
+star.className="star";
+star.style.left=Math.random()*100+"%";
+star.style.top=Math.random()*100+"%";
+document.body.appendChild(star);
+}
+}
+
+
+/* 爱心 */
+function createHeart(){
+var heart=document.createElement("div");
+heart.className="heart";
+heart.innerHTML="❤️";
+heart.style.left=Math.random()*100+"%";
+document.body.appendChild(heart);
+setTimeout(()=>heart.remove(),5000);
+}
+
+
+/* =========================
+   🎮 接住爱心小游戏
+========================= */
+
+var gameRunning = false;
+var score = 0;
+var timeLeft = 30;
+var basket;
+var heartsGame = [];
+var gameInterval;
+var timerInterval;
+
+/* 创建游戏按钮 */
+var gameBtn = document.createElement("button");
+gameBtn.innerHTML = "开始小游戏";
+gameBtn.onclick = startGame;
+document.getElementById("main").appendChild(gameBtn);
+
+/* 开始游戏 */
+function startGame(){
+
+if(gameRunning) return;
+
+// 如果已有旧游戏区域，先删除
+var oldGame = document.getElementById("gameArea");
+if(oldGame){
+oldGame.remove();
+}
+
+gameRunning = true;
+score = 0;
+timeLeft = 30;
+heartsGame = [];
+var specialTriggered = false; 
+
+var gameArea = document.createElement("div");
+gameArea.id = "gameArea";
+gameArea.style.position = "absolute";
+gameArea.style.bottom = "0";
+gameArea.style.left = "0";
+gameArea.style.width = "100%";
+gameArea.style.height = "60%";
+gameArea.style.overflow = "hidden";
+document.body.appendChild(gameArea);
+
+/* 篮子 */
+basket = document.createElement("div");
+basket.style.position = "absolute";
+basket.style.bottom = "10px";
+basket.style.left = "45%";
+basket.style.fontSize = "40px";
+basket.innerHTML = "🧺";
+gameArea.appendChild(basket);
+
+/* 显示分数 */
+var scoreBoard = document.createElement("div");
+scoreBoard.id = "scoreBoard";
+scoreBoard.style.position = "absolute";
+scoreBoard.style.top = "10px";
+scoreBoard.style.left = "10px";
+scoreBoard.innerHTML = "得分: 0 | 剩余时间: 30";
+gameArea.appendChild(scoreBoard);
+
+/* 手机触屏控制 */
+gameArea.addEventListener("touchmove", function(e){
+if(!gameRunning) return;
+
+var touch = e.touches[0];
+var x = touch.clientX;
+
+/* 让篮子跟随手指 */
+basket.style.left = (x - 20) + "px";
+});
+
+/* 兼容鼠标拖动（电脑也能用） */
+gameArea.addEventListener("mousemove", function(e){
+if(!gameRunning) return;
+basket.style.left = (e.clientX - 20) + "px";
+});
+
+function clampBasket(){
+var left = basket.offsetLeft;
+if(left < 0) basket.style.left = "0px";
+if(left > window.innerWidth - 40)
+basket.style.left = (window.innerWidth - 40) + "px";
+}
+
+setInterval(clampBasket, 10);
+
+/* 爱心生成 */
+gameInterval = setInterval(function(){
+var heart = document.createElement("div");
+heart.innerHTML = "❤️";
+heart.style.position = "absolute";
+heart.style.left = Math.random()*90 + "%";
+heart.style.top = "0px";
+heart.style.fontSize = "30px";
+gameArea.appendChild(heart);
+heartsGame.push(heart);
+},800);
+
+/* 下落动画 */
+var fallInterval = setInterval(function(){
+heartsGame.forEach(function(heart, index){
+var top = heart.offsetTop;
+heart.style.top = (top + 5) + "px";
+
+/* 碰撞检测 */
+if(top > window.innerHeight*0.5 - 60){
+if(Math.abs(heart.offsetLeft - basket.offsetLeft) < 50){
+score++;
+heart.remove();
+heartsGame.splice(index,1);
+
+/* 🎆 彩蛋触发 */
+if(score > 15 && !specialTriggered){
+specialTriggered = true;
+bigCelebration();
+}
+}
+}
+
+/* 掉出屏幕删除 */
+if(top > window.innerHeight*0.6){
+heart.remove();
+heartsGame.splice(index,1);
+}
+});
+},30);
+
+/* 计时器 */
+timerInterval = setInterval(function(){
+timeLeft--;
+scoreBoard.innerHTML = "得分: " + score + " | 剩余时间: " + timeLeft;
+
+if(timeLeft <= 0){
+
+clearInterval(gameInterval);
+clearInterval(timerInterval);
+clearInterval(fallInterval);
+
+gameRunning = false;
+
+setTimeout(()=>{
+var area = document.getElementById("gameArea");
+if(area) area.remove();
+},500);
+
+alert("游戏结束 🎉\n最终得分: " + score);
+}
+},1000);
+
+}
+/* =========================
+   🎡 手动拖动旋转相册
+========================= */
+
+var carousel = document.getElementById("carousel");
+var currentRotation = 0;
+var isDragging = false;
+var startX = 0;
+
+carousel.addEventListener("mousedown", function(e){
+isDragging = true;
+startX = e.clientX;
+});
+
+document.addEventListener("mousemove", function(e){
+if(!isDragging) return;
+var delta = e.clientX - startX;
+currentRotation += delta * 0.3;
+carousel.style.transform = "rotateY(" + currentRotation + "deg)";
+startX = e.clientX;
+});
+
+document.addEventListener("mouseup", function(){
+isDragging = false;
+});
+
+/* 手机触控 */
+carousel.addEventListener("touchstart", function(e){
+isDragging = true;
+startX = e.touches[0].clientX;
+});
+
+carousel.addEventListener("touchmove", function(e){
+if(!isDragging) return;
+var delta = e.touches[0].clientX - startX;
+currentRotation += delta * 0.3;
+carousel.style.transform = "rotateY(" + currentRotation + "deg)";
+startX = e.touches[0].clientX;
+});
+
+carousel.addEventListener("touchend", function(){
+isDragging = false;
+});
+
+/* =========================
+   🎆 大烟花 + 生日文字
+========================= */
+
+function bigCelebration(){
+
+// 居中文字
+var msg = document.createElement("div");
+msg.innerHTML = "妈妈生日快乐";
+msg.style.position = "fixed";
+msg.style.top = "50%";
+msg.style.left = "50%";
+msg.style.transform = "translate(-50%,-50%)";
+msg.style.fontSize = "60px";
+msg.style.fontWeight = "bold";
+msg.style.color = "white";
+msg.style.textShadow = "0 0 20px pink, 0 0 40px hotpink";
+msg.style.zIndex = "9999";
+msg.style.opacity = "0";
+msg.style.transition = "opacity 1s";
+document.body.appendChild(msg);
+
+// 渐显
+setTimeout(()=>{ msg.style.opacity = "1"; },100);
+
+// 中央爆炸
+var canvas = document.getElementById("fireworks");
+var rect = canvas.getBoundingClientRect();
+var centerX = rect.width / 2;
+var centerY = rect.height / 2;
+
+for(var i=0;i<5;i++){
+setTimeout(function(){
+explode(canvas.width/2, canvas.height/2, 150);
+}, i*400);
+}
+
+// 5秒后淡出
+setTimeout(function(){
+msg.style.opacity = "0";
+setTimeout(()=>msg.remove(),1000);
+},5000);
+}
+</script>
+
+</body>
+</html>
