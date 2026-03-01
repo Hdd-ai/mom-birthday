@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mom OS</title>
 
 <style>
@@ -9,7 +10,7 @@ body{
 margin:0;
 color:white;
 font-family:"Microsoft YaHei";
-overflow:hidden;
+overflow:hidden;   /* 重新禁止 body 滚动 */
 text-align:center;
 animation:bgMove 15s infinite alternate;
 }
@@ -32,9 +33,14 @@ background:black;
 z-index:5;
 }
 
+h1{
+font-size:8vw;
+}
+
 button{
 padding:10px 20px;
-font-size:16px;
+font-size:4.5vw;
+padding:12px 25px;
 border:none;
 border-radius:20px;
 cursor:pointer;
@@ -47,6 +53,9 @@ color:black;
 display:none;
 position:relative;
 z-index:2;
+height:100vh;
+overflow-y:auto;
+padding-bottom:100px;
 }
 
 #message{
@@ -54,35 +63,38 @@ width:70%;
 margin:auto;
 margin-top:20px;
 min-height:100px;
-font-size:22px;
+font-size:5vw;
 white-space:pre-line;
 }
 
 #randomWish{
-font-size:22px;
+font-size:5vw;
 margin-top:20px;
 min-height:40px;
 opacity:0;
 transition:opacity 0.5s;
 }
-
-#carousel{
-position:relative;
-width:300px;
-height:300px;
-margin:40px auto;
-transform-style:preserve-3d;
-transition: transform 0.1s linear;
+#gallery {
+  text-align: center;
+  margin-top: 30px;
 }
 
-#carousel img{
-position:absolute;
-width:280px;
-height:280px;
-left:10px;
-top:10px;
-border-radius:20px;
-object-fit:cover;
+#slide {
+  width: 80%;
+  max-width: 400px;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  transition: opacity 0.5s;
+}
+
+#controls button {
+  margin: 10px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 20px;
+  background: #ff6699;
+  color: white;
+  font-size: 16px;
 }
 
 
@@ -134,10 +146,12 @@ pointer-events:none;
 
 <div id="message"></div>
 
-<div id="carousel">
-<img src="photo1.jpg" style="transform:rotateY(0deg) translateZ(400px);">
-<img src="photo2.jpg" style="transform:rotateY(120deg) translateZ(400px);">
-<img src="photo3.jpg" style="transform:rotateY(240deg) translateZ(400px);">
+<div id="gallery">
+  <img id="slide" src="photo1.jpg">
+  <div id="controls">
+    <button onclick="prevPhoto()">上一张</button>
+    <button onclick="nextPhoto()">下一张</button>
+  </div>
 </div>
 
 <button onclick="showRandomWish()">点我一下</button>
@@ -245,6 +259,44 @@ setTimeout(typeWriter,60);
 }
 }
 
+// 相册
+var photos = [
+"photo1.jpg",
+"photo2.jpg",
+"photo3.jpg",
+"photo4.jpg",
+"photo5.jpg",
+"photo6.jpg",
+"photo7.jpg",
+"photo8.jpg",
+"photo9.jpg",
+"photo10.jpg"
+];
+
+var current = 0;
+
+function showPhoto(){
+var slide = document.getElementById("slide");
+slide.style.opacity = 0;
+
+setTimeout(function(){
+slide.src = photos[current];
+slide.style.opacity = 1;
+},300);
+}
+
+function nextPhoto(){
+current++;
+if(current >= photos.length) current = 0;
+showPhoto();
+}
+
+function prevPhoto(){
+current--;
+if(current < 0) current = photos.length - 1;
+showPhoto();
+}
+
 /* 随机祝福语 */
 var wishes=[
 "🎉 生日快乐！",
@@ -339,13 +391,15 @@ var specialTriggered = false;
 
 var gameArea = document.createElement("div");
 gameArea.id = "gameArea";
-gameArea.style.position = "absolute";
+gameArea.style.position = "fixed";
 gameArea.style.bottom = "0";
 gameArea.style.left = "0";
 gameArea.style.width = "100%";
-gameArea.style.height = "60%";
+gameArea.style.height = "60vh";
+gameArea.style.zIndex = "999";
+gameArea.style.background = "rgba(0,0,0,0.3)";
 gameArea.style.overflow = "hidden";
-document.body.appendChild(gameArea);
+document.getElementById("main").appendChild(gameArea);
 
 /* 篮子 */
 basket = document.createElement("div");
@@ -455,49 +509,6 @@ alert("游戏结束 🎉\n最终得分: " + score);
 },1000);
 
 }
-/* =========================
-   🎡 手动拖动旋转相册
-========================= */
-
-var carousel = document.getElementById("carousel");
-var currentRotation = 0;
-var isDragging = false;
-var startX = 0;
-
-carousel.addEventListener("mousedown", function(e){
-isDragging = true;
-startX = e.clientX;
-});
-
-document.addEventListener("mousemove", function(e){
-if(!isDragging) return;
-var delta = e.clientX - startX;
-currentRotation += delta * 0.3;
-carousel.style.transform = "rotateY(" + currentRotation + "deg)";
-startX = e.clientX;
-});
-
-document.addEventListener("mouseup", function(){
-isDragging = false;
-});
-
-/* 手机触控 */
-carousel.addEventListener("touchstart", function(e){
-isDragging = true;
-startX = e.touches[0].clientX;
-});
-
-carousel.addEventListener("touchmove", function(e){
-if(!isDragging) return;
-var delta = e.touches[0].clientX - startX;
-currentRotation += delta * 0.3;
-carousel.style.transform = "rotateY(" + currentRotation + "deg)";
-startX = e.touches[0].clientX;
-});
-
-carousel.addEventListener("touchend", function(){
-isDragging = false;
-});
 
 /* =========================
    🎆 大烟花 + 生日文字
